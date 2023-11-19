@@ -10,23 +10,54 @@
             padding: 0;
             box-sizing: border-box;
         }
-
+        body{
+            font-family: sans-serif;
+        }
         h1{
             text-align: center;
+            margin: 20px auto;
+            color: rgb(197, 146, 71);
         }
         .filter{
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 1rem;
+            margin: 20px auto;
+        }
+        select{
+            background-color: antiquewhite;
+            padding: 5px 10px ;
+            border-radius: 2px;
+            font-size: 14px;
+            outline: none;
+        }
+        #resetBtn{
+            background-color: #f96969;
+            padding: 5px 10px;
+            font-size: 14px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        #resetBtn:hover{
+            background-color: #f44141;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+        }
+        #resetBtn:active{
+            transform: scale(0.97);
         }
         #pokemon-search{
             display: block;
-            text-align: center;
-            margin: 0px auto;
+            margin: 10px auto 20px auto;
+            font-size: 18px;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            background-color: rgb(232, 205, 205);
+            outline: none;
         }
         .cardContainer{
-            border: 1px solid black;
             height: auto;
             width: 95%;
             margin: 0px auto;
@@ -59,22 +90,44 @@
             min-width: 200px;
             height: 260px;
             perspective: 1000px;
+            cursor: pointer;
+            
         }
 
-.flip-card-inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  text-align: center;
-  transition: transform 0.6s;
-  transform-style: preserve-3d;
-  box-shadow: 2px 2px 20px rgba(0, 0, 0, 0.7);
-  border-radius: 6px;
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s, box-shadow 0.3s;
+            transform-style: preserve-3d;
+            box-shadow: 2px 2px 20px rgba(0, 0, 0, 0.7);
+            border-radius: 6px;
+            animation: rotateScale 1s ease-out; /* Add rotation and scale animation */
+            cursor: pointer;
+        }
+
+@keyframes rotateScale {
+    0% {
+        transform: rotateY(0) scale(1);
+    }
+    50% {
+        transform: rotateY(180deg) scale(1.1);
+    }
+    100% {
+        transform: rotateY(360deg) scale(1);
+    }
 }
 
 .flip-card:hover .flip-card-inner {
-  transform: rotateY(180deg);
+    transform: rotateY(180deg) scale(1.1);
+    box-shadow: 2px 2px 30px rgba(0, 0, 0, 0.9); /* Increase box shadow on hover */
 }
+
+
+/* .flip-card:hover .flip-card-inner {
+  transform: rotateY(180deg);
+} */
 
 .flip-card-front, .flip-card-back {
   position: absolute;
@@ -121,19 +174,35 @@
         </select>
         <button id="resetBtn">reset</button>
     </div>
-    <input type="text" id="pokemon-search">
+    <input type="text" id="pokemon-search" placeholder="search your pokemon...">
     <div class="cardContainer">
             
     </div>
 
     <script>
+        const colorArray = [
+             "#f97777",
+             "#f9e877",
+             "#88f977",
+             "#77f9c9",
+             "#77cef9",
+             "#7784f9",
+             "#b877f9",
+             "#f977d6",
+             "#f9779e",
+             "#f9ba77",
+        ];
         const option = document.getElementById('filter-type');
+        const reset = document.getElementById('resetBtn');
         
         const apiUrl = `https://pokeapi.co/api/v2/type/`;
         const container = document.querySelector('.cardContainer');
+        
         container.innerHTML = "";
         const createPokemonCard = (pokemon, id)=>{
             if(id!==undefined){
+                const colornum = Math.floor(Math.random() * (9 - 0 + 1)) + 0;
+                const mycolor = colorArray[colornum];
                 let able = [];
                 pokemon.abilities.forEach((ab)=>{
                     able.push(ab.ability.name);
@@ -141,29 +210,30 @@
                 const ability = able.join(', ')
                 const card = document.createElement('div');
             card.classList.add('flip-card');
-            card.innerHTML = `<div class="flip-card-inner">
-                <div class="flip-card-front">
-                    <div id="card_id">#<span>${id}</span></div>
+            const innerCard = document.createElement('div');
+            innerCard.classList.add('flip-card-inner');
+            const fCard = document.createElement('div');
+            fCard.classList.add('flip-card-front');
+            fCard.innerHTML = `<div id="card_id">#<span>${id}</span></div>
                     <figure>
                         <img src="${pokemon.sprites.front_default}" alt="pokemon-card1">
                     </figure>
                     <h3 id="pokemon-name">${pokemon.name}</h3>
-                    <div id="skill-type">${pokemon.types[0].type.name}</div>
-                </div>
-                <div class="flip-card-back">
-                    <div id="card_id">#<span>${id}</span></div>
+                    <div id="skill-type">${pokemon.types[0].type.name}</div>`;
+            const bcard = document.createElement('div');
+            bcard.classList.add('flip-card-back');
+            bcard.innerHTML = `<div id="card_id">#<span>${id}</span></div>
                     <figure>
                         <img src="${pokemon.sprites.back_default}" alt="pokemon-card1">
                     </figure>
                     <h3 id="pokemon-name">${pokemon.name}</h3>
-                    <div id="Abilities">Abilities:<span>${ability}</span></div>
-                </div>
-            </div>`;
+                    <div id="Abilities">Abilities:<span>${ability}</span></div>`;
+            fCard.style.backgroundColor = mycolor;
+            innerCard.append(fCard, bcard);
+            card.appendChild(innerCard);
             container.appendChild(card);
             } 
         };
-        createPokemonCard();
-        createPokemonCard();
         async function getPokemons(urlWG){
             try {
             let response = await fetch(urlWG);
@@ -202,13 +272,16 @@
 
         let pokemonList = [];
 
-        Promise.all(arrayOfPromises).then((pokemonDetails)=>{
+            container.innerHTML = `Please wait we are fetching your cards...`;
+        
+            Promise.all(arrayOfPromises).then((pokemonDetails)=>{
+                container.innerHTML = "";
             pokemonList = pokemonDetails;
             pokemonDetails.forEach((pokemon)=>{
                 const id = pokemon.id;
                 createPokemonCard(pokemon,id);
             });
-        });
+            });
         
         const searchInput = document.getElementById('pokemon-search');
         searchInput.addEventListener("keyup", (e)=>{
@@ -232,7 +305,13 @@
                 createPokemonCard(pokemon,id);
             });
         });
-        
+        reset.addEventListener('click',()=>{
+            container.innerHTML = "";
+            pokemonList.forEach((pokemon)=>{
+                const id = pokemon.id;
+                createPokemonCard(pokemon,id);
+            });
+        });
     </script>
 </body>
 </html>
